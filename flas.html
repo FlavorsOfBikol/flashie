@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Foodie Flashcard Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #ffffff;
+      background-image: url('mt_mayon_background.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      color: #8b0000;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    #flashcardContainer {
+      width: 400px;
+      height: 300px;
+      margin: 0 auto;
+      perspective: 1000px;
+    }
+
+    .flip-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+    }
+
+    .flip-container.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-front,
+    .flashcard-back {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      backface-visibility: hidden;
+    }
+
+    .flashcard-front {
+      background-color: #fff;
+      border: 1px solid #8b0000;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .flashcard-back {
+      background-color: #8b0000;
+      color: #fff;
+      border: 1px solid #8b0000;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-image {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .flashcard-answer {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .flashcard-description {
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .choices {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .choices button {
+      padding: 8px 16px;
+      font-size: 16px;
+      margin: 8px;
+      background-color: #b80025;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .choices button:hover {
+      background-color: #ff214f;
+    }
+
+    .next-button {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .next-button button {
+      padding: 8px 16px;
+      font-size: 16px;
+      background-color: #b80025;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .next-button button:hover {
+      background-color: #ff214f;
+    }
+
+    .congratulations {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Foodie Flashcard Game</h1>
+  <div id="flashcardContainer"></div>
+  <div id="choicesContainer"></div>
+  <div class="next-button">
+    <button onclick="showNextFlashcard()">Next</button>
+  </div>
+
+  <script>
+    var flashcards = [
+      {
+        image: "bicol_express.jpg",
+        answer: "Bicol Express",
+        description: "Bicol Express is an iconic Bicolano dish made with pork, coconut milk, shrimp paste, and chili peppers.",
+        choices: ["Bicol Express", "Laing", "Siling Labuyo", "Candied Pili"]
+      },
+      {
+        image: "laing.jpg",
+        answer: "Laing",
+        description: "Laing is a Bicolano dish featuring taro leaves cooked in coconut milk and spices.",
+        choices: ["Laing", "Bicol Express", "Siling Labuyo", "Candied Pili"]
+      },
+      {
+        image: "siling_labuyo.jpg",
+        answer: "Siling Labuyo",
+        description: "Siling Labuyo is the Bicolano term for the spicy chili pepper commonly used in their cuisine.",
+        choices: ["Siling Labuyo", "Bicol Express", "Laing", "Candied Pili"]
+      },
+      {
+        image: "candied_pili.jpg",
+        answer: "Candied Pili",
+        description: "Candied Pili is a Bicolano delicacy made from pili nuts known for its buttery and crunchy texture.",
+        choices: ["Candied Pili", "Bicol Express", "Laing", "Siling Labuyo"]
+      },
+      // Add more flashcards here
+    ];
+
+    var flashcardContainer = document.getElementById("flashcardContainer");
+    var choicesContainer = document.getElementById("choicesContainer");
+    var currentFlashcardIndex = 0;
+
+    function displayFlashcard() {
+      var flashcard = flashcards[currentFlashcardIndex];
+
+      var card = document.createElement("div");
+      card.classList.add("flip-container");
+
+      var front = document.createElement("div");
+      front.classList.add("flashcard-front");
+
+      var image = document.createElement("img");
+      image.classList.add("flashcard-image");
+      image.src = flashcard.image;
+      front.appendChild(image);
+
+      var back = document.createElement("div");
+      back.classList.add("flashcard-back");
+
+      var answer = document.createElement("div");
+      answer.classList.add("flashcard-answer");
+      answer.textContent = flashcard.answer;
+
+      var description = document.createElement("div");
+      description.classList.add("flashcard-description");
+      description.textContent = flashcard.description;
+
+      back.appendChild(answer);
+      back.appendChild(description);
+
+      card.appendChild(front);
+      card.appendChild(back);
+
+      var choices = document.createElement("div");
+      choices.classList.add("choices");
+
+      // Shuffle the choices array randomly
+      var shuffledChoices = shuffleArray(flashcard.choices);
+
+      // Create choice buttons
+      shuffledChoices.forEach(function (choice) {
+        var button = document.createElement("button");
+        button.textContent = choice;
+        button.addEventListener("click", function () {
+          if (choice === flashcard.answer) {
+            congratulate(description);
+          } else {
+            revealAnswer();
+          }
+        });
+        choices.appendChild(button);
+      });
+
+      flashcardContainer.innerHTML = "";
+      choicesContainer.innerHTML = "";
+
+      flashcardContainer.appendChild(card);
+      choicesContainer.appendChild(choices);
+    }
+
+    function congratulate(description) {
+      var flipContainer = flashcardContainer.querySelector(".flip-container");
+      flipContainer.classList.add("flipped");
+      var congratulations = document.createElement("div");
+      congratulations.classList.add("congratulations");
+      congratulations.textContent = "Congratulations! You got it right!";
+      congratulations.appendChild(description);
+      flashcardContainer.appendChild(congratulations);
+    }
+
+    function revealAnswer() {
+      var flipContainer = flashcardContainer.querySelector(".flip-container");
+      flipContainer.classList.add("flipped");
+    }
+
+    function showNextFlashcard() {
+      var flipContainer = flashcardContainer.querySelector(".flip-container");
+      flipContainer.classList.remove("flipped");
+
+      currentFlashcardIndex++;
+      if (currentFlashcardIndex >= flashcards.length) {
+        flashcards = shuffleArray(flashcards);
+        currentFlashcardIndex = 0;
+      }
+
+      displayFlashcard();
+    }
+
+    // Fisher-Yates shuffle algorithm
+    function shuffleArray(array) {
+      var currentIndex = array.length;
+      var temporaryValue, randomIndex;
+
+      while (0 !== currentIndex) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+      }
+
+      return array;
+    }
+
+    displayFlashcard();
+  </script>
+</body>
+</html>
