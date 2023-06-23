@@ -78,6 +78,7 @@
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 10px;
+      text-align: center;
     }
 
     .flashcard-description {
@@ -123,13 +124,6 @@
     .next-button button:hover {
       background-color: #ff214f;
     }
-
-    .congratulations {
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
   </style>
 </head>
 <body>
@@ -165,7 +159,7 @@
         answer: "Candied Pili",
         description: "Candied Pili is a Bicolano delicacy made from pili nuts known for its buttery and crunchy texture.",
         choices: ["Candied Pili", "Bicol Express", "Laing", "Siling Labuyo"]
-      },
+      }
       // Add more flashcards here
     ];
 
@@ -216,7 +210,10 @@
         button.textContent = choice;
         button.addEventListener("click", function () {
           if (choice === flashcard.answer) {
-            congratulate(description);
+            flipCard(card);
+            setTimeout(function () {
+              showDescription(description);
+            }, 500);
           } else {
             revealAnswer();
           }
@@ -231,24 +228,22 @@
       choicesContainer.appendChild(choices);
     }
 
-    function congratulate(description) {
-      var flipContainer = flashcardContainer.querySelector(".flip-container");
-      flipContainer.classList.add("flipped");
-      var congratulations = document.createElement("div");
-      congratulations.classList.add("congratulations");
-      congratulations.textContent = "Congratulations! You got it right!";
-      congratulations.appendChild(description);
-      flashcardContainer.appendChild(congratulations);
+    function flipCard(card) {
+      card.classList.toggle("flipped");
+    }
+
+    function showDescription(description) {
+      flashcardContainer.querySelector(".flashcard-back").appendChild(description);
     }
 
     function revealAnswer() {
-      var flipContainer = flashcardContainer.querySelector(".flip-container");
-      flipContainer.classList.add("flipped");
+      var card = flashcardContainer.querySelector(".flip-container");
+      flipCard(card);
     }
 
     function showNextFlashcard() {
-      var flipContainer = flashcardContainer.querySelector(".flip-container");
-      flipContainer.classList.remove("flipped");
+      var card = flashcardContainer.querySelector(".flip-container");
+      flipCard(card);
 
       currentFlashcardIndex++;
       if (currentFlashcardIndex >= flashcards.length) {
@@ -256,7 +251,9 @@
         currentFlashcardIndex = 0;
       }
 
-      displayFlashcard();
+      setTimeout(function () {
+        displayFlashcard();
+      }, 500);
     }
 
     // Fisher-Yates shuffle algorithm
